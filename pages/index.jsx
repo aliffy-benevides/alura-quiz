@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 
-import { bg } from '../db.json';
+import { bg, title, description } from '../db.json';
 
-import Widget from '../src/components/Widget';
 import QuizBackground from '../src/components/QuizBackground';
 import QuizContainer from '../src/components/QuizContainer';
+import QuizLogo from '../src/components/QuizLogo';
+import Widget from '../src/components/Widget';
 import Footer from '../src/components/Footer';
 import GitHubCorner from '../src/components/GitHubCorner';
+import Input from '../src/components/Input';
+import Button from '../src/components/Button';
 
 export default function Home() {
   const [name, setName] = useState('');
@@ -16,30 +19,32 @@ export default function Home() {
   return (
     <QuizBackground backgroundImage={bg}>
       <QuizContainer>
+        <QuizLogo />
         <Widget>
           <Widget.Header>
-            <h1>The legend of Zelda</h1>
+            <h1>{title}</h1>
           </Widget.Header>
           <Widget.Content>
+            <p>{description}</p>
             <form onSubmit={(e) => {
               e.preventDefault();
               router.push({ pathname: '/quiz', query: { name } });
             }}>
-              <input type="text" placeholder="Digite seu nome"
+              <Input type="text" placeholder="Digite seu nome"
                 name="name" value={name}
                 onChange={(e) => setName(e.target.value)}
               />
 
-              <button type="submit" disabled={name.length === 0}>
+              <Button type="submit" disabled={name.length === 0}>
                 Jogar {name}
-              </button>
+              </Button>
             </form>
           </Widget.Content>
         </Widget>
 
         <Widget>
           <Widget.Content>
-            <h1>The legend of Zelda</h1>
+            <h1>Quizes da galera</h1>
 
             <p>csdgbhdfhgdv s sdg ds gsd gs...</p>
           </Widget.Content>
