@@ -32,6 +32,10 @@ const AlternativesContainer = styled.div`
   display: flex;
   flex-flow: column nowrap;
 
+  button {
+    cursor: pointer;
+  }
+
   button[data-selected="true"] {
     background-color: ${({ theme }) => theme.colors.primary};
     
