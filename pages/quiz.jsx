@@ -31,6 +31,21 @@ const QuestionFormStyles = styled.form`
 const AlternativesContainer = styled.div`
   display: flex;
   flex-flow: column nowrap;
+
+  button[data-selected="true"] {
+    background-color: ${({ theme }) => theme.colors.primary};
+    
+    &[data-status="SUCCESS"] {
+      background-color: ${({ theme }) => theme.colors.success};
+    }
+    &[data-status="ERROR"] {
+      background-color: ${({ theme }) => theme.colors.wrong};
+    }
+  }
+
+  button:focus {
+    opacity: 1;
+  }
 `;
 
 function LoadingWidget() {
@@ -53,6 +68,7 @@ export default function Quiz() {
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAlternative, setSelectedAlternative] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const [isQuestionAnswered, setIsQuestionAnswered] = useState(false);
 
   useEffect(() => {
     const timerId = setTimeout(() => setIsLoading(false), 1000);
@@ -68,19 +84,16 @@ export default function Quiz() {
 
   function renderAlternatives(question) {
     return question.alternatives.map((alternative, index) => {
-      const isSelected = selectedAlternative === index;
       const alternativeId = `alternative_${index}`;
+      const isSelected = selectedAlternative === index;
 
       return (
         <button className="alternative-button" type="button" key={alternativeId}
-          style={{ backgroundColor: isSelected ? 'green' : 'gray' }}
-          onClick={() => {
-            if (!isSelected) {
-              setSelectedAlternative(index);
-            } else {
-              setSelectedAlternative(null);
-            }
-          }}
+          data-selected={isSelected}
+          data-status={isQuestionAnswered && ((selectedAlternative === question.answer) ? 'SUCCESS' : 'ERROR')}
+          onClick={() => (!isSelected
+            ? setSelectedAlternative(index)
+            : setSelectedAlternative(null))}
         >
           {alternative}
         </button>
@@ -95,25 +108,30 @@ export default function Quiz() {
       <QuestionFormStyles onSubmit={(e) => {
         e.preventDefault();
 
-        if (selectedAlternative === question.answer) {
-          // eslint-disable-next-line no-alert
-          alert('Acertou!');
-        } else {
-          // eslint-disable-next-line no-alert
-          alert(`Errroooouu!\nA resposta certa é:\n${question.alternatives[question.answer]}`);
-        }
+        setIsQuestionAnswered(true);
 
-        setSelectedAlternative(null);
-        setAnswers([...answers, selectedAlternative]);
+        setTimeout(() => {
+          setIsQuestionAnswered(false);
+          setSelectedAlternative(null);
+          setAnswers([...answers, selectedAlternative]);
+        }, 3000);
       }}>
         <h2>{question.title}</h2>
         <p>{question.description}</p>
         <AlternativesContainer>
           {renderAlternatives(question)}
         </AlternativesContainer>
-        <Button type="submit" disabled={selectedAlternative === null}>
+        <Button type="submit" disabled={isQuestionAnswered || selectedAlternative === null}>
           CONFIRMAR
         </Button>
+        {isQuestionAnswered && (selectedAlternative === question.answer
+          ? <p>Acertou!</p>
+          : (
+            <p>
+              Errroooouu!<br />A resposta certa é:<br />
+              {question.alternatives[question.answer]}
+            </p>
+          ))}
       </QuestionFormStyles>
     );
   }
@@ -135,6 +153,7 @@ export default function Quiz() {
           <Widget>
             <Widget.Header>
               <button type="button"
+                style={{ marginRight: '10px' }}
                 onClick={(e) => {
                   e.preventDefault();
                   router.back();
