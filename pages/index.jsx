@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
-import { bg, title, description } from '../db.json';
+import {
+  bg, title, description, external
+} from '../db.json';
 
 import QuizBackground from '../src/components/QuizBackground';
 import QuizContainer from '../src/components/QuizContainer';
@@ -20,7 +24,15 @@ export default function Home() {
     <QuizBackground backgroundImage={bg}>
       <QuizContainer>
         <QuizLogo />
-        <Widget>
+        <Widget
+          as={motion.section}
+          transition={{ delay: 0, duration: 0.5 }}
+          variants={{
+            show: { opacity: 1, y: '0' },
+            hidden: { opacity: 0, y: '100%' }
+          }}
+          initial="hidden" animate="show"
+        >
           <Widget.Header>
             <h1>{title}</h1>
           </Widget.Header>
@@ -42,11 +54,36 @@ export default function Home() {
           </Widget.Content>
         </Widget>
 
-        <Widget>
+        <Widget
+          as={motion.section}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          variants={{
+            show: { opacity: 1 },
+            hidden: { opacity: 0 }
+          }}
+          initial="hidden" animate="show"
+        >
           <Widget.Content>
             <h1>Quizes da galera</h1>
 
-            <p>csdgbhdfhgdv s sdg ds gsd gs...</p>
+            <ul>
+              {external.map((link) => {
+                const [projectName, userName] = /https?:\/\/([\w.-]+).vercel.app\/?/.exec(link)[1]
+                  .split('.');
+                return (
+                  <li key={link}>
+                    <Link passHref href={({
+                      pathname: `/quiz/${projectName}.${userName}`,
+                      query: { name }
+                    })}>
+                      <Widget.Topic disabled={name.length === 0}>
+                        {`${projectName} - ${userName}`}
+                      </Widget.Topic>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
           </Widget.Content>
         </Widget>
         <Footer />

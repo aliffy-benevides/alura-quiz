@@ -1,26 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import React, { useContext, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import styled, { ThemeContext } from 'styled-components';
 import { useRouter } from 'next/router';
+import { ClockLoader } from 'react-spinners';
 
-import { questions } from '../db.json';
-
-import QuizBackground from '../src/components/QuizBackground';
-import QuizContainer from '../src/components/QuizContainer';
-import QuizLogo from '../src/components/QuizLogo';
-import Widget from '../src/components/Widget';
-import Button from '../src/components/Button';
+import QuizBackground from '../QuizBackground';
+import QuizContainer from '../QuizContainer';
+import QuizLogo from '../QuizLogo';
+import Widget from '../Widget';
+import Button from '../Button';
+import BackArrow from '../BackArrow';
 
 const QuestionFormStyles = styled.form`
   display: flex;
   flex-flow: column nowrap;
-
-  .alternative-button {
-    margin-top: 5px;
-    text-align: left;
-    padding: 7px;
-    border-radius: 7px;
-    outline: none;
-  }
 
   button[type=submit] {
     margin-top: 20px;
@@ -36,7 +29,7 @@ const AlternativesContainer = styled.div`
     cursor: pointer;
   }
 
-  button[data-selected="true"] {
+  a[data-selected="true"] {
     background-color: ${({ theme }) => theme.colors.primary};
     
     &[data-status="SUCCESS"] {
@@ -47,35 +40,29 @@ const AlternativesContainer = styled.div`
     }
   }
 
-  button:focus {
+  a:focus {
     opacity: 1;
   }
 `;
 
-function LoadingWidget() {
-  return (
-    <Widget>
-      <Widget.Header>
-        Carregando...
-      </Widget.Header>
+const LoaderContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
 
-      <Widget.Content>
-        [Desafio do Loading]
-      </Widget.Content>
-    </Widget>
-  );
-}
-
-export default function Quiz() {
+function QuizPage({ questions, bg }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [selectedAlternative, setSelectedAlternative] = useState(null);
   const [answers, setAnswers] = useState([]);
   const [isQuestionAnswered, setIsQuestionAnswered] = useState(false);
+  const themeContext = useContext(ThemeContext);
 
   useEffect(() => {
-    const timerId = setTimeout(() => setIsLoading(false), 1000);
+    const timerId = setTimeout(() => setIsLoading(false), 3000);
 
     return (() => {
       clearTimeout(timerId);
@@ -86,21 +73,43 @@ export default function Quiz() {
     setQuestionIndex(answers.length);
   }, [answers]);
 
+  function LoadingWidget() {
+    return (
+      <Widget>
+        <Widget.Header>
+          Carregando...
+        </Widget.Header>
+  
+        <Widget.Content>
+          <LoaderContainer>
+            <ClockLoader size={150} color={themeContext.colors.secondary} />
+          </LoaderContainer>
+        </Widget.Content>
+      </Widget>
+    );
+  }
+
   function renderAlternatives(question) {
     return question.alternatives.map((alternative, index) => {
       const alternativeId = `alternative_${index}`;
       const isSelected = selectedAlternative === index;
 
       return (
-        <button className="alternative-button" type="button" key={alternativeId}
+        <Widget.Topic key={alternativeId}
           data-selected={isSelected}
           data-status={isQuestionAnswered && ((selectedAlternative === question.answer) ? 'SUCCESS' : 'ERROR')}
-          onClick={() => (!isSelected
-            ? setSelectedAlternative(index)
-            : setSelectedAlternative(null))}
+          onClick={() => {
+            if (!isQuestionAnswered) {
+              if (!isSelected) {
+                setSelectedAlternative(index);
+              } else {
+                setSelectedAlternative(null);
+              }
+            }
+          }}
         >
           {alternative}
-        </button>
+        </Widget.Topic>
       );
     });
   }
@@ -118,7 +127,7 @@ export default function Quiz() {
           setIsQuestionAnswered(false);
           setSelectedAlternative(null);
           setAnswers([...answers, selectedAlternative]);
-        }, 3000);
+        }, 1500);
       }}>
         <h2>{question.title}</h2>
         <p>{question.description}</p>
@@ -149,22 +158,22 @@ export default function Quiz() {
   }
 
   return (
-    <QuizBackground>
+    <QuizBackground backgroundImage={bg}>
       <QuizContainer>
         <QuizLogo />
 
         {isLoading ? <LoadingWidget /> : (
           <Widget>
             <Widget.Header>
-              <button type="button"
+              <div aria-hidden="true"
                 style={{ marginRight: '10px' }}
                 onClick={(e) => {
                   e.preventDefault();
                   router.back();
                 }}
               >
-                {'<'}
-              </button>
+                <BackArrow />
+              </div>
               {answers.length < questions.length
                 ? <h1>Pergunta {questionIndex + 1} de {questions.length}</h1>
                 : <h1>Parabéns {router.query.name}</h1>}
@@ -187,3 +196,16 @@ export default function Quiz() {
     </QuizBackground>
   );
 }
+
+QuizPage.propTypes = {
+  questions: PropTypes.arrayOf(PropTypes.shape({
+    image: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    answer: PropTypes.number.isRequired,
+    alternatives: PropTypes.arrayOf(PropTypes.string),
+  })).isRequired,
+  bg: PropTypes.string.isRequired
+};
+
+export default QuizPage;

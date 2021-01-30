@@ -27,7 +27,10 @@
     }
   ],
   "external": [
-    ""
+    "https://curso-alura-imersao-react2.gpd38.vercel.app/",
+    "https://aluraquiz-coffee.leonardot07.vercel.app/",
+    "https://alura-quiz-base.abnner13.vercel.app/",
+    "https://flash-quiz-next.davidlpc1.vercel.app/"
   ],
   "theme": {
     "colors": {

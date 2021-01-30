@@ -23,5 +23,6 @@ module.exports = {
     'react/jsx-one-expression-per-line': [0],
     'react/jsx-props-no-spreading': [0],
     'react/jsx-closing-bracket-location': [0],
+    'comma-dangle': 0
   },
 };
